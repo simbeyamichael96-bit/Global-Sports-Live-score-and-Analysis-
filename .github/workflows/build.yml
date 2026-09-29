@@ -8,7 +8,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
-      - run: flutter create. --platforms=android --project-name global_sports_live || true
+      - run: flutter create --platforms=android -t app --project-name global_sports_live temp_fix
+      - run: rm -rf android
+      - run: cp -r temp_fix/android./
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
