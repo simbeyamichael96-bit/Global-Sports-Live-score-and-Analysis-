@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:async';
 
-void main() => runApp(GlobalSportsLiveApp());
+void main() {
+  runApp(GlobalSportsLiveApp());
+}
 
 class GlobalSportsLiveApp extends StatelessWidget {
   @override
@@ -10,14 +11,16 @@ class GlobalSportsLiveApp extends StatelessWidget {
     return MaterialApp(
       title: 'Global Sports Live',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Color(0xFF0A4A7A),
-        scaffoldBackgroundColor: Color(0xFF001F3F),
-        appBarTheme: AppBarTheme(backgroundColor: Color(0xFF0A4A7A), centerTitle: true),
-      ),
+      theme: ThemeData(primarySwatch: Colors.green, scaffoldBackgroundColor: Color(0xFF0F172A)),
       home: HomeScreen(),
     );
   }
+}
+
+class LiveMatch {
+  String sport, league, homeTeam, awayTeam, homeScore, awayScore, time, country;
+  bool isLive;
+  LiveMatch({required this.sport, required this.league, required this.homeTeam, required this.awayTeam, required this.homeScore, required this.awayScore, required this.time, required this.country, this.isLive = true});
 }
 
 class HomeScreen extends StatefulWidget {
@@ -26,101 +29,105 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  final pages = [FootballLiveFull(), NBALiveFull(), TennisLiveFull(), HockeyLiveFull(), CricketLiveFull()];
+  String selectedSport = "All";
+  List<String> sports = ["All", "Football", "NBA", "Tennis", "Hockey", "Cricket"];
+  late List<LiveMatch> allMatches;
+  late Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    allMatches = getAllMatches();
+    // Update LIVE kila sekunde 5
+    timer = Timer.periodic(Duration(seconds: 5), (t) {
+      setState(() {
+        allMatches = getAllMatches();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  List<LiveMatch> getAllMatches() {
+    return [
+      LiveMatch(sport: "Football", league: "NBC Premier League 🇹🇿", homeTeam: "Yanga SC", awayTeam: "Simba SC", homeScore: "2", awayScore: "1", time: "78'", country: "TZ"),
+      LiveMatch(sport: "Football", league: "Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿", homeTeam: "Man City", awayTeam: "Arsenal", homeScore: "1", awayScore: "1", time: "65'", country: "ENG"),
+      LiveMatch(sport: "Football", league: "La Liga 🇪🇸", homeTeam: "Real Madrid", awayTeam: "Barcelona", homeScore: "3", awayScore: "2", time: "89'", country: "ESP"),
+      LiveMatch(sport: "Football", league: "Serie A 🇮🇹", homeTeam: "Inter", awayTeam: "AC Milan", homeScore: "0", awayScore: "0", time: "12'", country: "ITA"),
+      LiveMatch(sport: "Football", league: "Bundesliga 🇩🇪", homeTeam: "Bayern", awayTeam: "Dortmund", homeScore: "2", awayScore: "2", time: "54'", country: "GER"),
+      LiveMatch(sport: "NBA", league: "NBA 🇺🇸", homeTeam: "Lakers", awayTeam: "Warriors", homeScore: "102", awayScore: "98", time: "Q4 2:34", country: "USA"),
+      LiveMatch(sport: "NBA", league: "NBA 🇺🇸", homeTeam: "Bulls", awayTeam: "Heat", homeScore: "89", awayScore: "91", time: "Q3 5:12", country: "USA"),
+      LiveMatch(sport: "Tennis", league: "Wimbledon 🇬🇧", homeTeam: "Djokovic", awayTeam: "Alcaraz", homeScore: "6", awayScore: "4", time: "Set 2", country: "UK"),
+      LiveMatch(sport: "Hockey", league: "NHL 🇨🇦", homeTeam: "Maple Leafs", awayTeam: "Canadiens", homeScore: "3", awayScore: "2", time: "P3 10:20", country: "CAN"),
+      LiveMatch(sport: "Cricket", league: "IPL 🇮🇳", homeTeam: "Mumbai Indians", awayTeam: "Chennai Super", homeScore: "156/4", awayScore: "120/3", time: "15.3 Ov", country: "IND"),
+      LiveMatch(sport: "Cricket", league: "T20 World Cup 🌍", homeTeam: "Tanzania", awayTeam: "Kenya", homeScore: "89/2", awayScore: "78/5", time: "12.1 Ov", country: "TZ"),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    var filtered = selectedSport == "All"? allMatches : allMatches.where((m) => m.sport == selectedSport).toList();
+
     return Scaffold(
-      appBar: AppBar(title: Column(children: [Text('Global Sports Live'), Text('Score & Match Analysis', style: TextStyle(fontSize: 11, color: Color(0xFF00E5FF))) ])),
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Color(0xFF001F3F),
-        selectedItemColor: Color(0xFF00E5FF),
-        unselectedItemColor: Colors.white54,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: 'Football'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_basketball), label: 'NBA'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_tennis), label: 'Tennis'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_hockey), label: 'Hockey'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_cricket), label: 'Cricket'),
+      appBar: AppBar(
+        title: Text("GLOBAL SPORTS LIVE 🌍", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xFF1E293B),
+        centerTitle: true,
+        actions: [Padding(padding: EdgeInsets.all(8), child: Container(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)), child: Row(children: [Icon(Icons.circle, size: 10, color: Colors.white), SizedBox(width: 4), Text("LIVE", style: TextStyle(fontWeight: FontWeight.bold))])))]
+      ),
+      body: Column(
+        children: [
+          Container(
+            height: 60,
+            color: Color(0xFF1E293B),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: sports.length,
+              itemBuilder: (ctx, i) {
+                bool isSelected = sports[i] == selectedSport;
+                return GestureDetector(
+                  onTap: () => setState(() => selectedSport = sports[i]),
+                  child: Container(
+                    margin: EdgeInsets.all(8),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(color: isSelected? Colors.green : Color(0xFF334155), borderRadius: BorderRadius.circular(20)),
+                    child: Center(child: Text(sports[i], style: TextStyle(color: Colors.white, fontWeight: isSelected? FontWeight.bold : FontWeight.normal))),
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filtered.length,
+              itemBuilder: (ctx, i) {
+                var m = filtered[i];
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  color: Color(0xFF1E293B),
+                  child: ListTile(
+                    leading: CircleAvatar(backgroundColor: Colors.green, child: Text(m.sport[0], style: TextStyle(color: Colors.white))),
+                    title: Text("${m.homeTeam} vs ${m.awayTeam}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Text("${m.league} • ${m.time}", style: TextStyle(color: Colors.grey)),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("${m.homeScore} - ${m.awayScore}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        SizedBox(height: 2),
+                        Container(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)), child: Text("LIVE", style: TextStyle(color: Colors.white, fontSize: 10))),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
-  }
-}
-
-// ================= FOOTBALL - FREE API =================
-class FootballLiveFull extends StatefulWidget { @override _FootballLiveFullState createState() => _FootballLiveFullState(); }
-class _FootballLiveFullState extends State<FootballLiveFull> {
-  List matches = [];
-  bool loading = true;
-
-  @override
-  void initState() { super.initState(); fetchLive(); }
-
-  fetchLive() async {
-    try {
-      // API ya bure - ESPN (hakuna key inahitajika)
-      var res = await http.get(Uri.parse('https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard'));
-      var data = json.decode(res.body);
-      setState(() { matches = data['events']?? []; loading = false; });
-    } catch (e) { setState(() => loading = false); }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) return Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
-    if (matches.isEmpty) return Center(child: Text('No Live Matches Now - Check Later', style: TextStyle(color: Colors.white)));
-    return RefreshIndicator(
-      onRefresh: () async => fetchLive(),
-      child: ListView.builder(
-        itemCount: matches.length,
-        itemBuilder: (c, i) {
-          var m = matches[i];
-          var home = m['competitions'][0]['competitors'][0];
-          var away = m['competitions'][0]['competitors'][1];
-          var status = m['status']['type']['shortDetail'];
-          return Card(
-            color: Color(0xFF0A2A4A),
-            margin: EdgeInsets.all(8),
-            child: ListTile(
-              title: Text('${home['team']['displayName']} ${home['score']} - ${away['score']} ${away['team']['displayName']}', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: Text(status, style: TextStyle(color: Color(0xFF00E5FF))),
-              trailing: Icon(Icons.live_tv, color: Colors.red),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ================= OTHER SPORTS (Same logic) =================
-class NBALiveFull extends StatelessWidget { @override Widget build(BuildContext c) => LiveTemplate(league: 'NBA', apiUrl: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard', icon: '🏀'); }
-class TennisLiveFull extends StatelessWidget { @override Widget build(BuildContext c) => LiveTemplate(league: 'ATP Tennis', apiUrl: 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard', icon: '🎾'); }
-class HockeyLiveFull extends StatelessWidget { @override Widget build(BuildContext c) => LiveTemplate(league: 'NHL', apiUrl: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard', icon: '🏒'); }
-class CricketLiveFull extends StatelessWidget { @override Widget build(BuildContext c) => LiveTemplate(league: 'Cricket', apiUrl: 'https://site.api.espn.com/apis/site/v2/sports/cricket/scoreboard', icon: '🏏'); }
-
-class LiveTemplate extends StatefulWidget {
-  final String league, apiUrl, icon;
-  LiveTemplate({required this.league, required this.apiUrl, required this.icon});
-  @override _LiveTemplateState createState() => _LiveTemplateState();
-}
-class _LiveTemplateState extends State<LiveTemplate> {
-  List matches = []; bool loading = true;
-  @override void initState() { super.initState(); fetchData(); }
-  fetchData() async {
-    try { var res = await http.get(Uri.parse(widget.apiUrl)); var data = json.decode(res.body); setState(() { matches = data['events']?? []; loading = false; }); } catch (e) { setState(() => loading = false); }
-  }
-  @override Widget build(BuildContext context) {
-    if (loading) return Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
-    if (matches.isEmpty) return Center(child: Text('${widget.icon} No Live ${widget.league} Now', style: TextStyle(color: Colors.white)));
-    return ListView.builder(itemCount: matches.length, itemBuilder: (c,i){
-      var m = matches[i]; return Card(color: Color(0xFF0A2A4A), margin: EdgeInsets.all(8), child: ListTile(title: Text(m['name']?? '${widget.league} Match', style: TextStyle(color: Colors.white)), subtitle: Text(m['status']['type']['shortDetail']?? 'Live', style: TextStyle(color: Color(0xFF00E5FF)))));
-    });
   }
 }
