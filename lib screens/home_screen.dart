@@ -1,37 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../controllers/sports_controller.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Global Sports Live',
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: const HomeScreen(),
+    );
+  }
+}
 
 class HomeScreen extends StatelessWidget {
-  final c = Get.put(SportsController());
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Global Sports Live'), backgroundColor: Colors.green),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(12),
-            child: TextField(
-              onChanged: (v){
-                if(v.length >= 3) c.searchLeagues(v);
-                else if(v.isEmpty) c.searchLeagues("");
-              },
-              decoration: InputDecoration(
-                hintText: 'Andika herufi 3: yan, ars, bar',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+      appBar: AppBar(
+        title: const Text('Global Sports Live'),
+        backgroundColor: Colors.green,
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.sports_soccer, size: 100, color: Colors.green),
+            SizedBox(height: 20),
+            Text(
+              'Welcome to Global Sports Live!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-          ),
-          Expanded(child: Obx(()=> ListView.builder(
-            itemCount: c.filteredMatches.length,
-            itemBuilder: (ctx,i){
-              final m=c.filteredMatches[i];
-              return Card(child: ListTile(title: Text("${m.homeTeam} vs ${m.awayTeam}"), subtitle: Text(m.league), trailing: Text(m.score, style: TextStyle(fontWeight: FontWeight.bold))));
-            },
-          ))),
-        ],
+            SizedBox(height: 10),
+            Text('Live Scores & News'),
+          ],
+        ),
       ),
     );
   }
