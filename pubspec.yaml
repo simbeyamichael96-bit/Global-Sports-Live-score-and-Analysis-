@@ -1,0 +1,14 @@
+name: global_sports_live
+description: Global Sports Live - 35 Leagues including NBC Tanzania
+publish_to: 'none'
+version: 1.0.5+5
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  intl: ^0.19.0
+  cached_network_image: ^3.3.0
+flutter:
+  uses-material-design: true
