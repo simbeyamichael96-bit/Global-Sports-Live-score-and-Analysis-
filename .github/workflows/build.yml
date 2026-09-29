@@ -15,11 +15,11 @@ jobs:
       - name: Fix Project
         run: |
           cp lib/main.dart /tmp/main.dart
-          flutter create --project-name global_sports_live --platforms=android .
+          flutter create --project-name global_sports_live --platforms=android.
           cp /tmp/main.dart lib/main.dart
           cat > pubspec.yaml << 'EOF'
           name: global_sports_live
-          description: Global Sports LIVE
+          description: Global Sports LIVE PRO - API + AI
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -28,17 +28,20 @@ jobs:
             flutter:
               sdk: flutter
             http: ^1.2.0
-            google_mobile_ads: ^3.1.0
+            google_mobile_ads: ^4.0.0
             cupertino_icons: ^1.0.2
           flutter:
             uses-material-design: true
           EOF
-          sed -i 's/android:label=".*"/android:label="Global Sports Live"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label=".*"/android:label="Global Sports Live PRO"/' android/app/src/main/AndroidManifest.xml
           flutter pub get
+      - name: Add AdMob App ID
+        run: |
+          sed -i '/<application/a \ \ \ \ \ \ \ \ <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~8509470000"\/>' android/app/src/main/AndroidManifest.xml
       - name: Build APK
         run: flutter build apk --release
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Global-Sports-Live
+          name: Global-Sports-Live-PRO-FULL
           path: build/app/outputs/flutter-apk/app-release.apk
