@@ -12,16 +12,14 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.3'
-
-      - name: Fix Kotlin & Project
+      - name: Fix Project
         run: |
           cp lib/main.dart /tmp/main.dart
-          flutter create --project-name global_sports_live --platforms=android .
+          flutter create. --platforms=android
           cp /tmp/main.dart lib/main.dart
-
           cat > pubspec.yaml << 'EOF'
           name: global_sports_live
-          description: Global Sports LIVE - 42 Leagues
+          description: Global Sports LIVE
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -35,27 +33,12 @@ jobs:
           flutter:
             uses-material-design: true
           EOF
+          flutter pub get
+      - name: Build APK
+        run: flutter build apk --release
 
-          # REKEBISHA KOTLIN KWENYE FAILI ZOTE MBILI
-          cat > android/settings.gradle << 'SETTINGS'
-          pluginManagement {
-              def flutterSdkPath = {
-                  def properties = new Properties()
-                  file("local.properties").withInputStream { properties.load(it) }
-                  def flutterSdkPath = properties.getProperty("flutter.sdk")
-                  assert flutterSdkPath!= null, "flutter.sdk not set in local.properties or not set in properties"
-                  return flutterSdkPath
-              }()
-              includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-
-          plugins {
-              id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-              id "com.android.application" version "7.3.0" apply false
-              id "org.jetbrains.
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
