@@ -1,24 +1,17 @@
 name: global_sports_live
-description: Global Sports Live - 38 Leagues - 7 Sports - AI Prediction - Live Scores
+description: Global Sports Live - Money App
 publish_to: none
 version: 1.0.0+1
-
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.19.0"
-
+  sdk: ">=3.2.0 <4.0.0"
 dependencies:
   flutter:
     sdk: flutter
   http: 1.2.2
-  google_mobile_ads: 5.1.0
-  fl_chart: 0.68.0
+  google_mobile_ads: 4.0.0
   cupertino_icons: 1.0.6
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: 3.0.0
-
 flutter:
   uses-material-design: true
