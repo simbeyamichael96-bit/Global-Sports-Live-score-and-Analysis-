@@ -1,88 +1,108 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:fl_chart/fl_chart.dart';
 
-void main() {
-  runApp(const GlobalSportsLive());
-}
+void main() => runApp(const GlobalSportsApp());
 
-class GlobalSportsLive extends StatelessWidget {
-  const GlobalSportsLive({super.key});
+class GlobalSportsApp extends StatelessWidget {
+  const GlobalSportsApp({super.key});
+    @override
+      Widget build(BuildContext context) {
+          return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFF0A0E1A)),
+                            home: const SplashScreen(),
+                                );
+                                  }
+                                  }
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Global Sports Live',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF0A1931),
-      ),
-      home: const SplashScreen(),
-    );
-  }
-}
+                                  class SplashScreen extends StatefulWidget {
+                                    const SplashScreen({super.key});
+                                      @override
+                                        State<SplashScreen> createState() => _SplashScreenState();
+                                        }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
+                                        class _SplashScreenState extends State<SplashScreen> {
+                                          @override
+                                            void initState() {
+                                                super.initState();
+                                                    Timer(const Duration(seconds: 3), () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen())));
+                                                      }
+                                                        @override
+                                                          Widget build(BuildContext context) {
+                                                              return Scaffold(
+                                                                    backgroundColor: const Color(0xFF0A0E1A),
+                                                                          body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                                                                  Image.asset('assets/logo_full.png', width: 280),
+                                                                                          const SizedBox(height: 25),
+                                                                                                  const CircularProgressIndicator(color: Color(0xFF00C853)),
+                                                                                                        ])),
+                                                                                                            );
+                                                                                                              }
+                                                                                                              }
 
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    });
-  }
+                                                                                                              class HomeScreen extends StatefulWidget {
+                                                                                                                const HomeScreen({super.key});
+                                                                                                                  @override
+                                                                                                                    State<HomeScreen> createState() => _HomeScreenState();
+                                                                                                                    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/logo_full.png', width: 280),
-            const SizedBox(height: 30),
-            const CircularProgressIndicator(color: Color(0xFF0A1931)),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                                                                                                                    class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+                                                                                                                      late TabController tab;
+                                                                                                                        final matches = [
+                                                                                                                            {"league":"Premier League","home":"Arsenal","away":"Man City","score":"2-1","min":"78'","sport":"Football"},
+                                                                                                                                {"league":"LaLiga","home":"Real Madrid","away":"Barca","score":"0-0","min":"15'","sport":"Football"},
+                                                                                                                                    {"league":"NBA","home":"Lakers","away":"Warriors","score":"102-98","min":"Q4","sport":"Basketball"},
+                                                                                                                                        {"league":"IPL","home":"MI","away":"CSK","score":"187/4","min":"18.2ov","sport":"Cricket"},
+                                                                                                                                            {"league":"Wimbledon","home":"Alcaraz","away":"Djokovic","score":"2-1","min":"Set4","sport":"Tennis"},
+                                                                                                                                                {"league":"F1","home":"Verstappen","away":"Hamilton","score":"Lap 42","min":"Live","sport":"Racing"},
+                                                                                                                                                  ];
+                                                                                                                                                    @override
+                                                                                                                                                      void initState(){super.initState(); tab=TabController(length:6, vsync:this);}
+                                                                                                                                                        @override
+                                                                                                                                                          Widget build(BuildContext context){
+                                                                                                                                                              return Scaffold(
+                                                                                                                                                                    backgroundColor: const Color(0xFF0A0E1A),
+                                                                                                                                                                          appBar: AppBar(
+                                                                                                                                                                                  backgroundColor: const Color(0xFF0A0E1A),
+                                                                                                                                                                                          title: Row(children:[Image.asset('assets/logo.png',height:28), const SizedBox(width:6), const Text('GLOBAL SPORTS LIVE',style:TextStyle(color:Colors.white,fontWeight:FontWeight.bold,fontSize:13))]),
+                                                                                                                                                                                                  bottom: TabBar(controller:tab,isScrollable:true,indicatorColor:const Color(0xFF00C853),labelColor:const Color(0xFF00C853),unselectedLabelColor:Colors.white54,tabs:const[Tab(text:'ALL'),Tab(text:'FOOTBALL'),Tab(text:'CRICKET'),Tab(text:'BASKETBALL'),Tab(text:'TENNIS'),Tab(text:'F1/UFC')]),
+                                                                                                                                                                                                        ),
+                                                                                                                                                                                                              body: TabBarView(controller:tab, children:[
+                                                                                                                                                                                                                      list(matches), list(matches.where((m)=>m['sport']=='Football').toList()), list(matches.where((m)=>m['sport']=='Cricket').toList()), list(matches.where((m)=>m['sport']=='Basketball').toList()), list(matches.where((m)=>m['sport']=='Tennis').toList()), list(matches.where((m)=>m['sport']=='Racing').toList()),
+                                                                                                                                                                                                                            ]),
+                                                                                                                                                                                                                                );
+                                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                                    Widget list(List ms){
+                                                                                                                                                                                                                                        return ListView.builder(padding:const EdgeInsets.all(12),itemCount:ms.length,itemBuilder:(_,i){
+                                                                                                                                                                                                                                              final m=ms[i];
+                                                                                                                                                                                                                                                    return GestureDetector(
+                                                                                                                                                                                                                                                            onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>Analysis(match:m))),
+                                                                                                                                                                                                                                                                    child:Container(margin:const EdgeInsets.only(bottom:10),padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:const Color(0xFF151A2B),borderRadius:BorderRadius.circular(12),border:Border.all(color:Colors.white10)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                                                                                                                                                                                                                                                                              Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Text(m['league'],style:const TextStyle(color:Colors.white54,fontSize:10)),Container(padding:const EdgeInsets.symmetric(horizontal:6,vertical:2),decoration:BoxDecoration(color:Colors.red,borderRadius:BorderRadius.circular(4)),child:Text("LIVE • ${m['min']}",style:const TextStyle(color:Colors.white,fontSize:9)))]),
+                                                                                                                                                                                                                                                                                        const SizedBox(height:10),
+                                                                                                                                                                                                                                                                                                  Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Text(m['home'],style:const TextStyle(color:Colors.white,fontWeight:FontWeight.bold)),Text(m['score'],style:const TextStyle(color:Color(0xFF00C853),fontWeight:FontWeight.bold)),Text(m['away'],style:const TextStyle(color:Colors.white,fontWeight:FontWeight.bold))]),
+                                                                                                                                                                                                                                                                                                          ])),
+                                                                                                                                                                                                                                                                                                                );
+                                                                                                                                                                                                                                                                                                                    });
+                                                                                                                                                                                                                                                                                                                      }
+                                                                                                                                                                                                                                                                                                                      }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0A1931),
-        title: Row(
-          children: [
-            Image.asset('assets/logo.png', height: 35),
-            const SizedBox(width: 10),
-            const Text('Global Sports Live', style: TextStyle(color: Colors.white)),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/logo_full.png', width: 200),
-            const SizedBox(height: 20),
-            const Text('Welcome!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const Text('Global Sports Live - Realistic'),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                                                                                                                                                                                                                                                                                                                      class Analysis extends StatelessWidget{
+                                                                                                                                                                                                                                                                                                                        final Map match; const Analysis({super.key,required this.match});
+                                                                                                                                                                                                                                                                                                                          @override
+                                                                                                                                                                                                                                                                                                                            Widget build(BuildContext context){
+                                                                                                                                                                                                                                                                                                                                return Scaffold(
+                                                                                                                                                                                                                                                                                                                                      backgroundColor:const Color(0xFF0A0E1A),
+                                                                                                                                                                                                                                                                                                                                            appBar:AppBar(backgroundColor:const Color(0xFF0A0E1A),title:Text('${match['home']} vs ${match['away']}',style:const TextStyle(fontSize:13))),
+                                                                                                                                                                                                                                                                                                                                                  body:SingleChildScrollView(padding:const EdgeInsets.all(16),child:Column(children:[
+                                                                                                                                                                                                                                                                                                                                                          Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:const Color(0xFF151A2B),borderRadius:BorderRadius.circular(12)),child:Row(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:[Text(match['home'],style:const TextStyle(color:Colors.white,fontWeight:FontWeight.bold)),Text(match['score'],style:const TextStyle(color:Color(0xFF00C853),fontSize:24,fontWeight:FontWeight.bold)),Text(match['away'],style:const TextStyle(color:Colors.white,fontWeight:FontWeight.bold))])),
+                                                                                                                                                                                                                                                                                                                                                                  const SizedBox(height:12),
+                                                                                                                                                                                                                                                                                                                                                                          Container(height:180,padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:const Color(0xFF151A2B),borderRadius:BorderRadius.circular(12)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Attack Momentum',style:TextStyle(color:Colors.white,fontWeight:FontWeight.bold)),const SizedBox(height:15),Expanded(child:LineChart(LineChartData(gridData:const FlGridData(show:false),titlesData:const FlTitlesData(show:false),borderData:FlBorderData(show:false),lineBarsData:[LineChartBarData(spots:const[FlSpot(0,1),FlSpot(1,3),FlSpot(2,2),FlSpot(3,4),FlSpot(4,3),FlSpot(5,5)],isCurved:true,color:const Color(0xFF00C853),barWidth:3,dotData:const FlDotData(show:false))])))])),
+                                                                                                                                                                                                                                                                                                                                                                                  const SizedBox(height:12),
+                                                                                                                                                                                                                                                                                                                                                                                          Container(padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:const Color(0xFF151A2B),borderRadius:BorderRadius.circular(12)),child:Column(children:[row('xG','1.84','0.72'),row('Possession','62%','38%'),row('Shots','7','3'),row('Corners','8','2')])),
+                                                                                                                                                                                                                                                                                                                                                                                                ])),
+                                                                                                                                                                                                                                                                                                                                                                                                    );
+                                                                                                                                                                                                                                                                                                                                                                                                      }
+                                                                                                                                                                                                                                                                                                                                                                                                        Widget row(String l,String h,String a)=>Padding(padding:const EdgeInsets.symmetric(vertical:6),child:Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Text(h,style:const TextStyle(color:Colors.white)),Text(l,style:const TextStyle(color:Colors.white54,fontSize:11)),Text(a,style:const TextStyle(color:Colors.white))]));
+                                                                                                                                                                                                                                                                                                                                                                                                        }
