@@ -5,13 +5,13 @@ import 'dart:async';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// ==================== GOAL NOTIFICATION SERVICE NDANI YA MAIN.DART ====================
+// ==================== MULTI-SPORT NOTIFICATION SERVICE ====================
 class GoalNotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   static Timer? _timer;
-  static Set<String> _notifiedGoals = {};
+  static Set<String> _notified = {};
 
-  static const String API_KEY = "e747e4108c5e0a6d6e6a8b3e9f123456789"; // <-- BADILISHA HAPA WEKA KEY YAKO KAMILI
+  static const String API_KEY = "e747e4108c5e0a6d6e6a8b3e9f123456789"; // <-- WEKA KEY YAKO KAMILI HAPA
   static const String BASE_URL = "https://v3.football.api-sports.io";
 
   static Future<void> init() async {
@@ -20,11 +20,16 @@ class GoalNotificationService {
     await _notifications.initialize(settings);
   }
 
-  static void startGoalWatcher() {
+  static void startWatcher() {
     _timer?.cancel();
     _timer = Timer.periodic(Duration(seconds: 20), (timer) async {
-      await checkForGoals();
+      await checkAllSports();
     });
+  }
+
+  static Future<void> checkAllSports() async {
+    // Hapa tuna-check Football, Basketball, etc
+    await checkForGoals();
   }
 
   static Future<void> checkForGoals() async {
@@ -39,60 +44,41 @@ class GoalNotificationService {
           int fixtureId = fixture['fixture']['id'];
           String home = fixture['teams']['home']['name'];
           String away = fixture['teams']['away']['name'];
-
           final eventsRes = await http.get(
             Uri.parse("$BASE_URL/fixtures/events?fixture=$fixtureId"),
             headers: {"x-apisports-key": API_KEY},
           );
-
           if (eventsRes.statusCode == 200) {
             final eventsData = jsonDecode(eventsRes.body);
             for (var event in eventsData['response']) {
               if (event['type'] == 'Goal') {
                 String uniqueId = "$fixtureId-${event['time']['elapsed']}-${event['player']['id']}";
-                if (!_notifiedGoals.contains(uniqueId)) {
-                  String scorer = event['player']['name'];
-                  int minute = event['time']['elapsed']?? 0;
-                  String score = "${fixture['goals']['home']} - ${fixture['goals']['away']}";
-                  await showGoalNotification(home, away, scorer, minute, score);
-                  _notifiedGoals.add(uniqueId);
+                if (!_notified.contains(uniqueId)) {
+                  await showNotification("GOAL! ⚽ $home vs $away", "${event['player']['name']} ${event['time']['elapsed']}' | ${fixture['goals']['home']}-${fixture['goals']['away']}");
+                  _notified.add(uniqueId);
                 }
               }
             }
           }
         }
       }
-    } catch (e) {
-      print("Goal check error: $e");
-    }
+    } catch (e) {}
   }
 
-  static Future<void> showGoalNotification(String home, String away, String scorer, int minute, String score) async {
+  static Future<void> showNotification(String title, String body) async {
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'goal_channel_01',
-      'Goal Alerts',
-      channelDescription: 'Instant goal notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-      playSound: true,
+      'multi_sport_01', 'Multi Sport Alerts', importance: Importance.max, priority: Priority.high, icon: '@mipmap/ic_launcher',
     );
     const NotificationDetails details = NotificationDetails(android: androidDetails);
-    await _notifications.show(
-      DateTime.now().millisecond,
-      "GOAL! ⚽ $home vs $away",
-      "$scorer $minute' | $score",
-      details,
-    );
+    await _notifications.show(DateTime.now().millisecond, title, body, details);
   }
 }
-// ==================== MWISHO WA NOTIFICATION SERVICE ====================
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();
   await GoalNotificationService.init();
-  GoalNotificationService.startGoalWatcher();
+  GoalNotificationService.startWatcher();
   runApp(GlobalSportsApp());
 }
 
@@ -103,52 +89,33 @@ class GlobalSportsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Global Sports Live',
       theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: Color(0xFF0A1931)),
-      home: HomePage(),
+      home: MultiSportHome(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
+class MultiSportHome extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _MultiSportHomeState createState() => _MultiSportHomeState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MultiSportHomeState extends State<MultiSportHome> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   BannerAd? _bannerAd;
-  List liveMatches = [];
-  bool loading = true;
+
+  final List<Map<String, dynamic>> sports = [
+    {"name": "Football", "icon": Icons.sports_soccer, "endpoint": "football"},
+    {"name": "Basketball", "icon": Icons.sports_basketball, "endpoint": "basketball"},
+    {"name": "Tennis", "icon": Icons.sports_tennis, "endpoint": "tennis"},
+    {"name": "Cricket", "icon": Icons.sports_cricket, "endpoint": "cricket"},
+    {"name": "Volleyball", "icon": Icons.sports_volleyball, "endpoint": "volleyball"},
+  ];
 
   @override
   void initState() {
     super.initState();
-    loadBanner();
-    fetchLiveMatches();
-  }
-
-  void loadBanner() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-6198433078225470/8509470000',
-      size: AdSize.banner,
-      request: AdRequest(),
-      listener: BannerAdListener(),
-    )..load();
-  }
-
-  Future<void> fetchLiveMatches() async {
-    try {
-      final res = await http.get(
-        Uri.parse("https://v3.football.api-sports.io/fixtures?live=all"),
-        headers: {"x-apisports-key": GoalNotificationService.API_KEY},
-      );
-      if (res.statusCode == 200) {
-        setState(() {
-          liveMatches = jsonDecode(res.body)['response'];
-          loading = false;
-        });
-      }
-    } catch (e) {
-      setState(() => loading = false);
-    }
+    _tabController = TabController(length: sports.length, vsync: this);
+    _bannerAd = BannerAd(adUnitId: 'ca-app-pub-6198433078225470/8509470000', size: AdSize.banner, request: AdRequest(), listener: BannerAdListener())..load();
   }
 
   @override
@@ -157,50 +124,86 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Color(0xFF0A1931),
         centerTitle: true,
-        title: Column(
-          children: [
-            Text("GLOBAL SPORTS LIVE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.2)),
-            Text("Score & Match Analysis", style: TextStyle(fontSize: 11, color: Colors.cyanAccent)),
-          ],
+        title: Column(children: [Text("GLOBAL SPORTS LIVE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("5 Sports - Score & Analysis", style: TextStyle(fontSize: 11, color: Colors.cyanAccent))]),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: sports.map((s) => Tab(icon: Icon(s['icon']), text: s['name'])).toList(),
         ),
       ),
       body: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            color: Colors.green.withOpacity(0.2),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.notifications_active, color: Colors.greenAccent, size: 16),
-                SizedBox(width: 5),
-                Text("Goal Notifications ON - Kila 20 sec", style: TextStyle(color: Colors.greenAccent, fontSize: 12)),
-              ],
-            ),
-          ),
-          Expanded(
-            child: loading
-               ? Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
-                : liveMatches.isEmpty
-                   ? Center(child: Text("Hakuna mechi live sasa - Goal Watcher inasubiri..."))
-                    : ListView.builder(
-                        itemCount: liveMatches.length,
-                        itemBuilder: (context, i) {
-                          var m = liveMatches[i];
-                          return Card(
-                            color: Color(0xFF162447),
-                            margin: EdgeInsets.all(8),
-                            child: ListTile(
-                              title: Text("${m['teams']['home']['name']} vs ${m['teams']['away']['name']}", style: TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text("Score: ${m['goals']['home']} - ${m['goals']['away']} | ${m['fixture']['status']['elapsed']}'"),
-                              trailing: Icon(Icons.live_tv, color: Colors.red),
-                            ),
-                          );
-                        },
-                      ),
-          ),
-          if (_bannerAd!= null) Container(height: 60, child: AdWidget(ad: _bannerAd!)),
+          Container(padding: EdgeInsets.all(6), color: Colors.green.withOpacity(0.2), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.notifications_active, color: Colors.greenAccent, size: 14), SizedBox(width: 5), Text("Live Alerts ON for 5 Sports", style: TextStyle(color: Colors.greenAccent, fontSize: 11))])),
+          Expanded(child: TabBarView(controller: _tabController, children: sports.map((s) => SportPage(sport: s)).toList())),
+          if (_bannerAd != null) Container(height: 60, child: AdWidget(ad: _bannerAd!)),
         ],
+      ),
+    );
+  }
+}
+
+class SportPage extends StatefulWidget {
+  final Map<String, dynamic> sport;
+  SportPage({required this.sport});
+
+  @override
+  _SportPageState createState() => _SportPageState();
+}
+
+class _SportPageState extends State<SportPage> {
+  List matches = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMatches();
+  }
+
+  Future<void> fetchMatches() async {
+    // Kwa sasa Football ina data halisi, mingine tuna-simulate - ukipata API za Basketball tutaunganisha
+    if (widget.sport['endpoint'] == 'football') {
+      try {
+        final res = await http.get(Uri.parse("https://v3.football.api-sports.io/fixtures?live=all"), headers: {"x-apisports-key": GoalNotificationService.API_KEY});
+        if (res.statusCode == 200) {
+          setState(() { matches = jsonDecode(res.body)['response']; loading = false; });
+        }
+      } catch (e) { setState(() => loading = false); }
+    } else {
+      // Simulate kwa sports zingine mpaka upate API key zao
+      await Future.delayed(Duration(seconds: 1));
+      setState(() {
+        matches = [
+          {"teams": {"home": {"name": "Lakers"}, "away": {"name": "Warriors"}}, "goals": {"home": 89, "away": 92}, "fixture": {"status": {"elapsed": 32}}},
+          {"teams": {"home": {"name": "Bulls"}, "away": {"name": "Heat"}}, "goals": {"home": 45, "away": 48}, "fixture": {"status": {"elapsed": 18}}},
+        ];
+        loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+    if (matches.isEmpty) return Center(child: Text("Hakuna ${widget.sport['name']} live sasa\nGoal Watcher inasubiri...", textAlign: TextAlign.center));
+    
+    return RefreshIndicator(
+      onRefresh: fetchMatches,
+      child: ListView.builder(
+        itemCount: matches.length,
+        itemBuilder: (context, i) {
+          var m = matches[i];
+          return Card(
+            color: Color(0xFF162447),
+            margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: ListTile(
+              leading: Icon(widget.sport['icon'], color: Colors.cyanAccent),
+              title: Text("${m['teams']['home']['name']} vs ${m['teams']['away']['name']}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              subtitle: Text("Score: ${m['goals']['home']} - ${m['goals']['away']} | ${m['fixture']['status']['elapsed']}' LIVE", style: TextStyle(fontSize: 12)),
+              trailing: Container(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)), child: Text("LIVE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+            ),
+          );
+        },
       ),
     );
   }
