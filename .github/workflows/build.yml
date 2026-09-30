@@ -28,7 +28,7 @@ jobs:
       - name: Fix Android Project V2
         run: |
           rm -rf android
-          flutter create. --platforms=android --org com.global --project-name global_sports_live
+          flutter create . --platforms=android --org com.global --project-name global_sports_live
 
       - name: Restore pubspec
         run: |
