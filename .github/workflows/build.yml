@@ -1,59 +1,41 @@
 name: Build APK
-on: [push]
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.3'
-      - name: Install Dependencies
-        run: |
-          cat > pubspec.yaml << 'EOF'
-          name: global_sports_live
-          description: Global Sports Live PRO
-          publish_to: 'none'
-          version: 1.0.0+1
-          environment:
-            sdk: '>=3.0.0 <4.0.0'
-          dependencies:
-            flutter:
-              sdk: flutter
-            http: ^1.2.0
-            google_mobile_ads: ^4.0.0
-            cupertino_icons: ^1.0.2
-          flutter:
-            uses-material-design: true
-          EOF
-          flutter pub get
-      - name: Fix Manifest
-        run: |
-          cat > android/app/src/main/AndroidManifest.xml << 'EOF'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET" />
-              <application android:label="Global Sports Live PRO" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
-                  <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~8509470000"/>
-                  <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
-                      <meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme"/>
-                      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-                  </activity>
-                  <meta-data android:name="flutterEmbedding" android:value="2" />
-              </application>
-          </manifest>
-          EOF
-      - name: Build APK
-        run: |
-          flutter build apk --release -v
-          ls -lh build/app/outputs/flutter-apk/
+          flutter-version: '3.19.6'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Icon from assets/logo.png
+        run: flutter pub run flutter_launcher_icons
+
+      - name: Build APK Release
+        run: flutter build apk --release
+
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Global-Sports-Live-PRO
-          path: build/app/outputs/flutter-apk/*.apk
+          name: global-sports-live-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
