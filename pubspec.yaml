@@ -1,38 +1,40 @@
-name: global_sports_live
-description: Global Sports Live - Score & Match Analysis - API e747e4108a3f5543924daf0ab654f865
+name: global_sports_live_score
+description: GLOBAL SPORTS LIVE - Dunia nzima Live Score & Match Analysis kwa Football, Cricket, Basketball, Tennis, Rugby na zaidi.
 publish_to: 'none'
-version: 1.0.0+58
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
-dependencies:
-  flutter:
-    sdk: flutter
-  http: ^1.2.0
-  google_mobile_ads: ^4.0.0
-  flutter_local_notifications: ^16.3.0
-  cupertino_icons: ^1.0.5
+  dependencies:
+    flutter:
+        sdk: flutter
+          http: ^1.2.2
+            cupertino_icons: ^1.0.6
+              google_mobile_ads: ^5.1.0
+                flutter_local_notifications: ^17.1.2
+                  cached_network_image: ^3.3.1
+                    intl: ^0.19.0
+                      shimmer: ^3.0.0
+                        fl_chart: ^0.68.0
+                          provider: ^6.1.2
+                            share_plus: ^10.0.2
+                              url_launcher: ^6.2.5
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.0
-  flutter_launcher_icons: ^0.13.1
+                              dev_dependencies:
+                                flutter_test:
+                                    sdk: flutter
+                                      flutter_lints: ^4.0.0
+                                        flutter_launcher_icons: ^0.14.2
 
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/logo.png
-    - assets/logo_full.png
+                                        flutter:
+                                          uses-material-design: true
+                                            assets:
+                                                - assets/logo.png
+                                                    - assets/logo_full.png
 
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/logo.png"
-  min_sdk_android: 21
-  web:
-    generate: true
-    image_path: "assets/logo.png"
-    background_color: "#0A1931"
-    theme_color: "#0A1931"
+                                                    flutter_launcher_icons:
+                                                      android: "launcher_icon"
+                                                        ios: true
+                                                          image_path: "assets/logo.png"
+                                                            min_sdk_android: 21
