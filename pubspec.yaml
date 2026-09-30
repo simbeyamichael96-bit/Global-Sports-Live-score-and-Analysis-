@@ -1,7 +1,7 @@
 name: global_sports_live
-description: Global Sports Live - 5 Sports Real Time Scores & Goal Notifications. API e747e4108a3f5543924daf0ab654f865
+description: Global Sports Live - Score & Match Analysis - API e747e4108a3f5543924daf0ab654f865
 publish_to: 'none'
-version: 1.0.0+55
+version: 1.0.0+58
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -12,7 +12,6 @@ dependencies:
   http: ^1.2.0
   google_mobile_ads: ^4.0.0
   flutter_local_notifications: ^16.3.0
-  timezone: ^0.9.2
   cupertino_icons: ^1.0.5
 
 dev_dependencies:
