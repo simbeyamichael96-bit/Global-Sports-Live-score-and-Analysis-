@@ -59,45 +59,23 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: SET ICON MANUALLY - Weka logo yako kama Icon
+      - name: DEBUG - Angalia assets
+        run: |
+          ls -lh assets/
+          file assets/*
+
+      - name: SET ICON MANUALLY - Fix PNG
         run: |
           python3 -m pip install Pillow
           python3 << 'PY'
           from PIL import Image
-          import os, pathlib
+          import os
+
+          # Jaribu logo.png, kama ikigoma tumia logo_full.png
           src = "assets/logo.png"
-          if not os.path.exists(src):
-              print(f"ERROR: {src} haipo!")
-              exit(1)
-          im = Image.open(src).convert("RGBA")
-          # Tengeneza square background nyeupe kama logo sio square
-          size = max(im.size)
-          new_im = Image.new("RGBA", (size, size), (255,255,255,0))
-          new_im.paste(im, ((size-im.size[0])//2, (size-im.size[1])//2))
-
-          base = "android/app/src/main/res"
-          sizes = {
-              "mipmap-mdpi": 48,
-              "mipmap-hdpi": 72,
-              "mipmap-xhdpi": 96,
-              "mipmap-xxhdpi": 144,
-              "mipmap-xxxhdpi": 192
-          }
-          for folder, px in sizes.items():
-              path = os.path.join(base, folder)
-              os.makedirs(path, exist_ok=True)
-              resized = new_im.resize((px, px), Image.LANCZOS)
-              # Weka kama ic_launcher na launcher_icon zote mbili
-              resized.save(os.path.join(path, "ic_launcher.png"))
-              resized.save(os.path.join(path, "launcher_icon.png"))
-              print(f"Created {folder}/ic_launcher.png {px}x{px}")
-          PY
-
-      - name: Build APK Release
-        run: flutter build apk --release
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: global-sports-live-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          try:
+              im = Image.open(src)
+              print(f"Trying {src} -> {im.format}")
+              im.verify()
+          except Exception as e:
+   
