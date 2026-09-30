@@ -25,6 +25,11 @@ jobs:
           flutter-version: '3.19.6'
           channel: 'stable'
 
+      - name: Fix Old Android Project (V2 Embedding)
+        run: |
+          rm -rf android
+          flutter create . --platforms=android --org com.global --project-name global_sports_live
+
       - name: Install dependencies
         run: flutter pub get
 
