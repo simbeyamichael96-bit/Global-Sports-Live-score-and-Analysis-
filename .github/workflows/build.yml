@@ -16,7 +16,7 @@ jobs:
       - name: Fix Embedding V2 - Regenerate Android
         run: |
           rm -rf android
-          flutter create. --platforms=android --org com.example
+          flutter create . --platforms=android --org com.example
           python3 -c "
           import pathlib
           p = pathlib.Path('android/app/src/main/AndroidManifest.xml')
