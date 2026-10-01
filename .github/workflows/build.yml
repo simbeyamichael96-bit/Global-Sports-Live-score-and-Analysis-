@@ -15,26 +15,18 @@ jobs:
           channel: 'stable'
       - run: rm -rf android
       - run: flutter create --project-name global_sports --org com.example --platforms=android .
-      - name: Fix Manifest safely
+      - name: Add Internet and App Name
         run: |
-          python3 << 'PY'
-          import pathlib
-          m = pathlib.Path("android/app/src/main/AndroidManifest.xml").read_text()
-          # 1. Fix label
-          m = m.replace('android:label="global_sports"', 'android:label="Global Sports Live score and Match analysis"')
-          m = m.replace('android:label="global_sports_live_score_and_analysis"', 'android:label="Global Sports Live score and Match analysis"')
-          # 2. Add INTERNET if missing
-          if 'android.permission.INTERNET' not in m:
-              m = m.replace('<application', '<uses-permission android:name="android.permission.INTERNET" />\n <application')
-          # 3. Add AdMob safely if missing
-          if 'APPLICATION_ID' not in m:
-              m = m.replace('<application', '<application\n ><meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~2062108416" />\n <application'.replace('<application\n ><', '<'))
-              # actually correct insertion:
-          # Let's do proper insertion
-          if 'com.google.android.gms.ads.APPLICATION_ID' not in m:
-              m = m.replace('<application', '<application', 1)
-              # insert after <application
-              idx = m.find('<application')
-              end = m.find('>', idx) + 1
-              admob = '\n <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~2062108416" />'
-              m = m[:end] + admob + 
+          FILE=android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label="[^"]*"/android:label="Global Sports Live score and Match analysis"/' $FILE
+          if! grep -q "INTERNET" $FILE; then
+            sed -i '/<application/i \ <uses-permission android:name="android.permission.INTERNET" \/>' $FILE
+          fi
+          cat $FILE
+      - run: flutter clean
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Global-Sports-Live-Internet-Fixed
+          path: build/app/outputs/flutter-apk/app-release.apk
