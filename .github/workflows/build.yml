@@ -13,16 +13,25 @@ jobs:
         with:
           flutter-version: '3.22.3'
           channel: 'stable'
-      - name: Fix App Name and Permissions
+      - run: rm -rf android
+      - run: flutter create --project-name global_sports --org com.example --platforms=android .
+      - name: Fix Name Permissions and Logo
         run: |
           MANIFEST=android/app/src/main/AndroidManifest.xml
           grep -q "INTERNET" $MANIFEST || sed -i '/<manifest/a \ <uses-permission android:name="android.permission.INTERNET" />' $MANIFEST
           sed -i 's/android:label=".*"/android:label="Global Sports Live score and Match analysis"/' $MANIFEST
-          grep -q "com.google.android.gms.ads.APPLICATION_ID" $MANIFEST || sed -i '/<application/a \ <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~2062108416"\/>' $MANIFEST
+          grep -q "APPLICATION_ID" $MANIFEST || sed -i '/<application/a \ <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~2062108416"\/>' $MANIFEST
+          # Replace flutter logo with your logo if exists
+          if [ -f assets/icon.png ]; then
+            for d in android/app/src/main/res/mipmap-*; do
+              cp assets/icon.png $d/ic_launcher.png
+              cp assets/icon.png $d/ic_launcher_foreground.png 2>/dev/null || true
+            done
+          fi
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: Global-Sports-Live-Score-and-Match-analysis-APK
+          name: Global-Sports-LIVE-FINAL-APK
           path: build/app/outputs/flutter-apk/app-release.apk
