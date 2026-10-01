@@ -13,12 +13,16 @@ jobs:
         with:
           flutter-version: '3.22.3'
           channel: 'stable'
-      - run: rm -rf android
-      - run: flutter create --project-name global_sports --org com.example --platforms=android .
+      - name: Fix App Name and Permissions
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          grep -q "INTERNET" $MANIFEST || sed -i '/<manifest/a \ <uses-permission android:name="android.permission.INTERNET" />' $MANIFEST
+          sed -i 's/android:label=".*"/android:label="Global Sports Live score and Match analysis"/' $MANIFEST
+          grep -q "com.google.android.gms.ads.APPLICATION_ID" $MANIFEST || sed -i '/<application/a \ <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6198433078225470~2062108416"\/>' $MANIFEST
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: GLOBAL-LIVE-APK
+          name: Global-Sports-Live-Score-and-Match-analysis-APK
           path: build/app/outputs/flutter-apk/app-release.apk
